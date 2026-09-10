@@ -1,0 +1,8 @@
+{
+  "name": "Profit OS Chimera",
+  "description": "AI-Powered Growth Operating System with Enhanced Modules for Revenue, Automation, and Intelligence",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
