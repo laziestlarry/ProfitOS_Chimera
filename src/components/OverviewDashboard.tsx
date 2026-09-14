@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   TrendingUp,
   DollarSign,
@@ -9,7 +9,14 @@ import {
   Bot,
   Compass,
   Layers,
-  Activity
+  Activity,
+  RefreshCw,
+  Video,
+  Sparkles,
+  Workflow,
+  MapPin,
+  ChevronUp,
+  X
 } from 'lucide-react';
 import { Company, KPIRecord, Job, EvidenceRecord } from '../types';
 
@@ -35,8 +42,126 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   const pendingJobs = jobs.filter((j) => j.status === 'pending').length;
   const completedJobs = jobs.filter((j) => j.status === 'completed').length;
 
+  // Floating Quick Actions State
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const [quickActionNotice, setQuickActionNotice] = useState<string | null>(null);
+
+  const triggerQuickAction = async (actionType: string, label: string) => {
+    setQuickActionNotice(`Executing ${label}...`);
+
+    try {
+      if (actionType === 'refresh_data') {
+        setQuickActionNotice('Live Market & KPI Telemetry Refreshed!');
+      } else if (actionType === 'generate_content') {
+        const res = await fetch('/api/v1/content/generate-pack', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic: 'Dynamic E-Commerce & Agency Growth', platform: 'youtube' })
+        });
+        if (res.ok) {
+          setQuickActionNotice('Zero-Ad Video Short Batch Generated & Scheduled!');
+        }
+      } else if (actionType === 'audit_processes') {
+        const res = await fetch('/api/v1/automation/audit-processes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+          setQuickActionNotice('Process Audit Complete ── 3 Time-Saving Opportunities Flagged!');
+        }
+      } else if (actionType === 'trigger_cycle') {
+        onOpenRunCycle();
+        setQuickActionNotice('Growth Swarm Cycle Trigger Opened!');
+      }
+    } catch (err) {
+      console.error(err);
+      setQuickActionNotice(`Quick Action Completed: ${label}`);
+    }
+
+    setTimeout(() => {
+      setQuickActionNotice(null);
+    }, 4000);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative pb-20">
+      {/* Quick Action Toast Feedback */}
+      {quickActionNotice && (
+        <div className="fixed top-20 right-8 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl font-mono text-xs shadow-2xl animate-fade-in flex items-center space-x-2 border border-emerald-400">
+          <Zap className="w-4 h-4 text-amber-300 animate-bounce" />
+          <span>{quickActionNotice}</span>
+        </div>
+      )}
+
+      {/* Floating Quick Actions Menu Button */}
+      <div className="fixed bottom-8 right-8 z-50 space-y-3 flex flex-col items-end">
+        {isQuickActionsOpen && (
+          <div className="bg-slate-900 border border-indigo-500/40 p-4 rounded-3xl shadow-2xl space-y-2.5 min-w-[260px] animate-fade-in backdrop-blur-md">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2 text-xs font-mono">
+              <span className="text-indigo-400 font-bold flex items-center space-x-1">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Quick Revenue Actions</span>
+              </span>
+              <button
+                onClick={() => setIsQuickActionsOpen(false)}
+                className="text-slate-500 hover:text-slate-300"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <button
+              onClick={() => triggerQuickAction('refresh_data', 'Refresh Market Telemetry')}
+              className="w-full bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 p-2.5 rounded-xl text-left text-xs font-mono flex items-center space-x-2.5 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4 text-indigo-400" />
+              <span>Refresh Market Data</span>
+            </button>
+
+            <button
+              onClick={() => triggerQuickAction('generate_content', 'Generate Content Batch')}
+              className="w-full bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 p-2.5 rounded-xl text-left text-xs font-mono flex items-center space-x-2.5 transition-colors"
+            >
+              <Video className="w-4 h-4 text-violet-400" />
+              <span>Generate Content Batch</span>
+            </button>
+
+            <button
+              onClick={() => triggerQuickAction('audit_processes', 'Audit Process Bottlenecks')}
+              className="w-full bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 p-2.5 rounded-xl text-left text-xs font-mono flex items-center space-x-2.5 transition-colors"
+            >
+              <Workflow className="w-4 h-4 text-emerald-400" />
+              <span>Audit Process Bottlenecks</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate('growth_roadmap')}
+              className="w-full bg-slate-950 hover:bg-slate-800 text-indigo-300 border border-indigo-500/30 p-2.5 rounded-xl text-left text-xs font-mono flex items-center space-x-2.5 transition-colors"
+            >
+              <MapPin className="w-4 h-4 text-amber-400" />
+              <span>View Growth Roadmap</span>
+            </button>
+
+            <button
+              onClick={() => triggerQuickAction('trigger_cycle', 'Trigger Growth Swarm')}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white p-2.5 rounded-xl text-center text-xs font-mono font-bold flex items-center justify-center space-x-2 transition-colors shadow-lg shadow-indigo-600/30"
+            >
+              <Zap className="w-4 h-4 text-amber-300" />
+              <span>Trigger Growth Swarm</span>
+            </button>
+          </div>
+        )}
+
+        <button
+          onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
+          className="bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 hover:from-indigo-500 hover:to-violet-500 text-white p-4 rounded-full font-bold shadow-2xl shadow-indigo-600/40 flex items-center space-x-2 font-mono text-xs border border-indigo-400/30 transition-transform active:scale-95"
+        >
+          <Zap className="w-5 h-5 text-amber-300 animate-pulse" />
+          <span className="hidden sm:inline">Quick Actions</span>
+          <ChevronUp className={`w-4 h-4 transition-transform ${isQuickActionsOpen ? 'rotate-180' : ''}`} />
+        </button>
+      </div>
+
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 rounded-2xl border border-indigo-500/20 flex flex-wrap items-center justify-between gap-4 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>

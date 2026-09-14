@@ -85,7 +85,7 @@ export const LazyLarryAssistant: React.FC<LazyLarryAssistantProps> = ({ companyI
               </div>
 
               <div
-                className={`max-w-2xl p-4 rounded-2xl text-sm leading-relaxed ${
+                className={`max-w-2xl p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
                   msg.sender === 'user'
                     ? 'bg-indigo-600 text-white rounded-tr-none'
                     : 'bg-slate-950 border border-slate-800 text-slate-200 rounded-tl-none'

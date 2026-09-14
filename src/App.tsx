@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { Sidebar, ActiveTab } from './components/Sidebar';
 import { OverviewDashboard } from './components/OverviewDashboard';
@@ -13,19 +13,59 @@ import { SocialAutomationView } from './components/SocialAutomationView';
 import { IntelligenceView } from './components/IntelligenceView';
 import { ContentStudioView } from './components/ContentStudioView';
 import { AutomationWorkflowsView } from './components/AutomationWorkflowsView';
+import { ValueCycleView } from './components/ValueCycleView';
+import { OperatingManualView } from './components/OperatingManualView';
+import { CommercialLaunchView } from './components/CommercialLaunchView';
+import { DropLandingView } from './components/DropLandingView';
+import { UserDashboardView } from './components/UserDashboardView';
+import { CustomerFacingStorefront } from './components/CustomerFacingStorefront';
+import { GrowthRoadmapView } from './components/GrowthRoadmapView';
+import { LaunchProductionPortal } from './components/LaunchProductionPortal';
+import { RegisterModal } from './components/RegisterModal';
 import { RunCycleModal } from './components/RunCycleModal';
-import { Company, KPIRecord, Job, EvidenceRecord } from './types';
+import { Company, KPIRecord, Job, EvidenceRecord, UserProfile } from './types';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('drop_page');
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [currentCompanyId, setCurrentCompanyId] = useState<string>('autonoma-x');
+  const [currentCompanyId, setCurrentCompanyId] = useState<string>(() => {
+    return localStorage.getItem('profit_os_current_company_id') || 'autonoma-x';
+  });
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [kpis, setKpis] = useState<KPIRecord[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [evidence, setEvidence] = useState<EvidenceRecord[]>([]);
   const [apiStatus, setApiStatus] = useState<string>('Connected');
   const [isRunCycleOpen, setIsRunCycleOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+
+  const mainRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('/api/v1/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setCurrentUser(data);
+        }
+      })
+      .catch((err) => console.warn('Auth fetch error:', err));
+  }, []);
+
+  // Persist currentCompanyId in localStorage
+  useEffect(() => {
+    if (currentCompanyId) {
+      localStorage.setItem('profit_os_current_company_id', currentCompanyId);
+    }
+  }, [currentCompanyId]);
+
+  // Scroll main view to top on activeTab change
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activeTab]);
 
   // Load Companies
   const fetchCompanies = async () => {
@@ -34,7 +74,10 @@ export function App() {
       if (res.ok) {
         const data = await res.json();
         setCompanies(data);
-        if (data.length > 0 && !data.find((c: Company) => c.id === currentCompanyId)) {
+        const savedCompanyId = localStorage.getItem('profit_os_current_company_id');
+        if (savedCompanyId && data.find((c: Company) => c.id === savedCompanyId)) {
+          setCurrentCompanyId(savedCompanyId);
+        } else if (data.length > 0 && !data.find((c: Company) => c.id === currentCompanyId)) {
           setCurrentCompanyId(data[0].id);
         }
       }
@@ -109,6 +152,15 @@ export function App() {
     fetchCompanyData(currentCompanyId);
   };
 
+  const handleRegisterSuccess = (newUser: UserProfile, newWorkspaceId: string) => {
+    setCurrentUser(newUser);
+    setCurrentCompanyId(newWorkspaceId);
+    fetchCompanies();
+    setNotification(`Welcome, ${newUser.name}! Individual operator workspace created.`);
+    setTimeout(() => setNotification(null), 5000);
+    setActiveTab('user_dashboard');
+  };
+
   const currentCompany =
     companies.find((c) => c.id === currentCompanyId) || {
       id: currentCompanyId,
@@ -137,7 +189,42 @@ export function App() {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+        <main ref={mainRef} className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+          {activeTab === 'launch_portal' && (
+            <LaunchProductionPortal />
+          )}
+
+          {activeTab === 'customer_portal' && (
+            <CustomerFacingStorefront onEnterDashboard={() => setActiveTab('overview')} />
+          )}
+
+          {activeTab === 'growth_roadmap' && (
+            <GrowthRoadmapView
+              company={currentCompany}
+              kpis={kpis}
+              onNavigate={(tab) => setActiveTab(tab)}
+              onRunCycle={() => setIsRunCycleOpen(true)}
+            />
+          )}
+
+          {activeTab === 'drop_page' && (
+            <DropLandingView
+              onEnterApp={() => setActiveTab('overview')}
+              onOpenRegister={() => setIsRegisterOpen(true)}
+            />
+          )}
+
+          {activeTab === 'user_dashboard' && (
+            <UserDashboardView
+              user={currentUser}
+              company={currentCompany}
+              kpis={kpis}
+              jobs={jobs}
+              onOpenRegister={() => setIsRegisterOpen(true)}
+              onRunCycle={() => setIsRunCycleOpen(true)}
+            />
+          )}
+
           {activeTab === 'overview' && (
             <OverviewDashboard
               company={currentCompany}
@@ -149,12 +236,19 @@ export function App() {
             />
           )}
 
+          {activeTab === 'value_cycle' && <ValueCycleView />}
+
+          {activeTab === 'commercial_launch' && <CommercialLaunchView />}
+
+          {activeTab === 'operating_manual' && <OperatingManualView />}
+
           {activeTab === 'companies' && (
             <CompaniesView
               companies={companies}
               onCreateCompany={handleCreateCompany}
               currentCompanyId={currentCompanyId}
               onSelectCompany={setCurrentCompanyId}
+              onResetPortfolio={fetchCompanies}
             />
           )}
 
@@ -187,6 +281,12 @@ export function App() {
         isOpen={isRunCycleOpen}
         onClose={() => setIsRunCycleOpen(false)}
         onRunCycleComplete={handleRunCycleComplete}
+      />
+
+      <RegisterModal
+        isOpen={isRegisterOpen}
+        onClose={() => setIsRegisterOpen(false)}
+        onSuccess={handleRegisterSuccess}
       />
     </div>
   );

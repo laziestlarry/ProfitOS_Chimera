@@ -6,6 +6,40 @@ export interface Company {
   created_at?: string;
 }
 
+// Alias to clearly differentiate Governing Boards / Strategic Councils from Client Companies
+export type GoverningBoard = Company;
+
+export interface FunctionalTrack {
+  id: 'new_growth' | 'existing_revenue' | 'social_performance' | 'technical_infra';
+  title: string;
+  subtitle: string;
+  icon_name: string;
+  key_benefits: string[];
+  governing_entity: 'AutonomaX (Strategic Board)' | 'ProPulse (Execution Council)' | 'Joint Swarm';
+  target_outcomes: string;
+  active_plays_count: number;
+}
+
+export interface CheckoutJourneyStep {
+  step: number;
+  title: string;
+  description: string;
+  completed: boolean;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: 'founder' | 'operator' | 'agency_owner' | 'investor';
+  company_name: string;
+  avatar_url?: string;
+  license_tier: 'starter' | 'pro' | 'agency';
+  joined_at: string;
+  workspace_id: string;
+  bio?: string;
+}
+
 export interface KPIDefinition {
   name: string;
   label: string;

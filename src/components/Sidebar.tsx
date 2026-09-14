@@ -12,11 +12,25 @@ import {
   TrendingUp,
   Palette,
   Workflow,
+  CreditCard,
+  Rocket,
+  User,
+  Globe,
+  MapPin,
+  ShieldCheck,
   Sparkles
 } from 'lucide-react';
 
 export type ActiveTab =
   | 'overview'
+  | 'launch_portal'
+  | 'customer_portal'
+  | 'growth_roadmap'
+  | 'drop_page'
+  | 'user_dashboard'
+  | 'commercial_launch'
+  | 'value_cycle'
+  | 'operating_manual'
   | 'companies'
   | 'kpis'
   | 'plays'
@@ -37,7 +51,14 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   const primaryNav = [
     { id: 'overview' as ActiveTab, label: 'Overview Dashboard', icon: LayoutDashboard },
-    { id: 'companies' as ActiveTab, label: 'Companies', icon: Building2 },
+    { id: 'launch_portal' as ActiveTab, label: 'Production & Legal Launch', icon: ShieldCheck, badge: 'Launch' },
+    { id: 'growth_roadmap' as ActiveTab, label: 'Growth Roadmap', icon: MapPin, badge: 'Stages' },
+    { id: 'customer_portal' as ActiveTab, label: 'Customer Storefront', icon: Globe, badge: 'Public' },
+    { id: 'drop_page' as ActiveTab, label: 'Visual Drop Page', icon: Rocket, badge: 'Drop' },
+    { id: 'user_dashboard' as ActiveTab, label: 'Operator Dashboard', icon: User, badge: 'Profile' },
+    { id: 'commercial_launch' as ActiveTab, label: 'Commercial & Checkouts', icon: CreditCard, badge: 'Pay' },
+    { id: 'value_cycle' as ActiveTab, label: 'Value Cycle Architecture', icon: Workflow },
+    { id: 'companies' as ActiveTab, label: 'Governing Boards', icon: Building2 },
     { id: 'kpis' as ActiveTab, label: 'KPI Performance', icon: BarChart3 },
     { id: 'plays' as ActiveTab, label: 'Growth Plays', icon: PlaySquare },
     { id: 'jobs' as ActiveTab, label: 'Job Queue', icon: ListTodo },
@@ -120,12 +141,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       </div>
 
       <div className="pt-4 border-t border-slate-800/80 px-3">
-        <div className="bg-slate-950/80 p-3 rounded-lg border border-slate-800 text-xs">
-          <p className="text-slate-300 font-semibold mb-1">Profit OS Operating Manual</p>
+        <button
+          onClick={() => onTabChange('operating_manual')}
+          className={`w-full text-left p-3 rounded-xl border transition-all cursor-pointer group ${
+            activeTab === 'operating_manual'
+              ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
+              : 'bg-slate-950/80 border-slate-800 text-slate-300 hover:border-indigo-500/40 hover:bg-slate-900'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-1">
+            <span className="font-semibold text-xs text-indigo-300 group-hover:text-indigo-200">
+              Profit OS Operating Manual
+            </span>
+            <Sparkles className="w-3 h-3 text-amber-400 group-hover:scale-110 transition-transform" />
+          </div>
           <p className="text-slate-400 text-[11px] leading-relaxed">
-            BI + Growth Engine designed for rapid valuation & revenue scaling.
+            Click to view full SOPs, agent roles, and operational manual specs.
           </p>
-        </div>
+        </button>
       </div>
     </aside>
   );
